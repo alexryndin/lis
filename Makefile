@@ -1,5 +1,5 @@
-lis : parser.c
-	cc -Wall parser.c mpc/mpc.c -o parser -std=c99 -lreadline
+lis : lis.c
+	cc -Wall lis.c types.c mpc/mpc.c -o lis -std=c99 -lreadline --debug
 
 clean :
-	rm parsing
+	rm lis
