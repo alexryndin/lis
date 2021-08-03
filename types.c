@@ -102,6 +102,11 @@ LValue *new_lval_sym(char *repr) {
     if (strcmp(repr, "-") == 0) sym = LMINUS;
     if (strcmp(repr, "*") == 0) sym = LMUL;
     if (strcmp(repr, "/") == 0) sym = LDIV;
+    if (strcmp(repr, "head") == 0) sym = LHEAD;
+    if (strcmp(repr, "tail") == 0) sym = LTAIL;
+    if (strcmp(repr, "eval") == 0) sym = LEVAL;
+    if (strcmp(repr, "list") == 0) sym = LLIST;
+    if (strcmp(repr, "join") == 0) sym = LJOIN;
     ret->value.l_sym = new_l_sym(sym, repr);
     return ret;
 }
@@ -116,19 +121,44 @@ LValue *new_lval_sexpr(void) {
     return ret;
 }
 
-void del_lval(LValue *v) {
+LValue *new_lval_qexpr(void) {
+    LValue *ret = malloc(sizeof(LValue));
+    ret->type = LVAL_QEXPR;
+    ret->value.lval = malloc(sizeof(LValue*));
+    ret->len = 0;
+    ret->size = 1;
+    ret->start = 0;
+    return ret;
+}
+
+void lval_del(LValue *v) {
     switch (v->type) {
         case LVAL_INT: break;
         case LVAL_ERR: free(v->value.l_err.msg); break;
         case LVAL_SYM: free(v->value.l_sym.repr); break;
         case LVAL_SEXPR: 
+        case LVAL_QEXPR: 
             for (int i = 0; i < v->len; i++){
-                del_lval(v->value.lval[i]);
+                lval_del(v->value.lval[i]);
             }
 
         break;
     }
     free(v);
+    v = NULL;
+}
+
+void lval_free(LValue *v) {
+    // if (!v) return;
+    switch (v->type) {
+        case LVAL_INT: break;
+        case LVAL_ERR: free(v->value.l_err.msg); break;
+        case LVAL_SYM: free(v->value.l_sym.repr); break;
+        case LVAL_SEXPR: break;
+        case LVAL_QEXPR: break;
+    }
+    free(v);
+    v = NULL;
 }
 
 LValue *lval_plus(LValue *a, LValue *b) {
